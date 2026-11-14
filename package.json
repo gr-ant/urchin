@@ -11,7 +11,10 @@
     "src",
     "bin",
     "examples",
-    "README.md"
+    "README.md",
+    "samples",
+    "urchin.png",
+    "SPEC.md"
   ],
   "scripts": {
     "test": "node --test",

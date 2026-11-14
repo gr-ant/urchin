@@ -3,10 +3,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Urchin · JSON synthesizer</title>
+<link rel="icon" href="../urchin.png">
 <style>
   :root { color-scheme: dark; font: 16px/1.6 system-ui, sans-serif; background: #101b20; color: #e2eee9; }
   body { max-width: 800px; margin: 7vh auto; padding: 0 24px; }
-  h1 { font-size: 40px; margin-bottom: 0; letter-spacing: -.04em; }
+  .logo { display: block; margin-left: -28px; filter: invert(1); mix-blend-mode: screen; }
+  h1 { font-size: 40px; margin-top: 0; margin-bottom: 0; letter-spacing: -.04em; }
   p { color: #b0c2bd; }
   label { display: block; margin-top: 24px; }
   textarea { box-sizing: border-box; width: 100%; min-height: 340px; padding: 18px; border: 1px solid #425953; border-radius: 8px; background: #0b1418; color: #dfedc2; font: 14px/1.6 monospace; resize: vertical; }
@@ -17,13 +19,20 @@
   :focus-visible { outline: 3px solid #f2ce7d; outline-offset: 3px; }
   output { display: block; min-height: 2em; }
   small { color: #b0c2bd; }
+  .controls label { margin: 0; align-self: center; }
 </style>
+<img class="logo" src="../urchin.png" alt="" width="175" height="144">
 <h1>Urchin</h1>
 <p>A tiny synthesizer. Paste CSLT-1 JSON, press play, or save a WAV.<br>No samples, downloads, or dependencies.</p>
 <label for="instrument">Instrument library</label>
 <div class="controls">
   <select id="instrument"></select>
   <button id="load">Load instrument demo</button>
+</div>
+<label for="sample">Samples <small>· every .urchin file in /samples</small></label>
+<div class="controls">
+  <select id="sample"><option value="">Choose a song…</option></select>
+  <label><input type="checkbox" id="loop"> Loop</label>
 </div>
 <label for="score">Your music</label>
 <textarea id="score" spellcheck="false" aria-describedby="syntax"></textarea>
@@ -52,7 +61,28 @@
     }, null, 2);
     status.textContent = `${instruments[instrument.value]} demo loaded · press Play`;
   };
-  let player;
+  const sample = document.querySelector('#sample');
+  const loop = document.querySelector('#loop');
+  // shortcut: reads the web server's directory listing (python3 -m http.server, nginx autoindex); add a manifest file if the host has listings off
+  try {
+    const folder = new URL('../samples/', location.href);
+    const listing = new DOMParser().parseFromString(await (await fetch(folder)).text(), 'text/html');
+    for (const link of listing.querySelectorAll('a[href$=".urchin"]')) {
+      const url = new URL(link.getAttribute('href'), folder);
+      sample.add(new Option(decodeURIComponent(url.pathname.split('/').pop()).replace(/\.urchin$/, ''), url));
+    }
+  } catch {}
+  if (sample.length === 1) sample.options[0].text = 'No .urchin files found in /samples';
+  sample.onchange = async () => {
+    if (!sample.value) return;
+    try {
+      const response = await fetch(sample.value);
+      if (!response.ok) throw new Error(`Could not load ${sample.selectedOptions[0].text}`);
+      editor.value = await response.text();
+      status.textContent = `${sample.selectedOptions[0].text} loaded · press Play`;
+    } catch (error) { status.textContent = error.message; }
+  };
+  let player, stopped;
   try {
     const response = await fetch('./octaves.json');
     if (!response.ok) throw new Error('Could not load octaves.json');
@@ -63,16 +93,20 @@
   start.onclick = async () => {
     start.disabled = true;
     status.textContent = 'Rendering…';
+    stopped = false;
     try {
-      player = await play(editor.value);
-      stop.disabled = false;
-      status.textContent = `Playing · ${player.duration.toFixed(1)} seconds`;
-      await player.ended;
+      // shortcut: Loop replays after the release tail and a re-render, so there is a short gap; a gapless loop needs loop support in play()
+      do {
+        player = await play(editor.value);
+        stop.disabled = false;
+        status.textContent = `Playing · ${player.duration.toFixed(1)} seconds`;
+        await player.ended;
+      } while (loop.checked && !stopped);
       status.textContent = 'Ready';
     } catch (error) { status.textContent = error.message; }
     finally { player = undefined; start.disabled = false; stop.disabled = true; }
   };
-  stop.onclick = () => player?.stop();
+  stop.onclick = () => { stopped = true; player?.stop(); };
   save.onclick = () => {
     try {
       const title = compile(editor.value).title || 'urchin';
