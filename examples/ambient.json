@@ -1,0 +1,17 @@
+{
+  "format": "CSLT-1",
+  "version": "1.0",
+  "metadata": {
+    "title": "Minecraft Ambient Loop #1",
+    "tempo_bpm": 70,
+    "time_signature": "4/4",
+    "instruments": {
+      "P": "Acoustic Piano",
+      "M": "Music Box",
+      "G": "Nylon-String Guitar",
+      "C": "Solo Cello",
+      "S": "Ambient Synth Pad"
+    }
+  },
+  "sequence": "A1P5q A2P8q A3P1h A3M5e A4M8e B1P3q B2P8q B3P12h B3C1h"
+}

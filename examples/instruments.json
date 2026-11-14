@@ -1,0 +1,32 @@
+{
+  "format": "CSLT-1",
+  "version": "1.0",
+  "metadata": {
+    "title": "Urchin — 20 Instrument Showcase",
+    "tempo_bpm": 160,
+    "time_signature": "4/4",
+    "instruments": {
+      "A": "Acoustic Piano",
+      "B": "Electric Piano",
+      "C": "Tonewheel Organ",
+      "D": "Harpsichord",
+      "E": "Music Box",
+      "F": "Marimba",
+      "G": "Vibraphone",
+      "H": "Glockenspiel",
+      "I": "Nylon-String Guitar",
+      "J": "Steel-String Guitar",
+      "K": "Electric Bass",
+      "L": "Harp",
+      "M": "Solo Cello",
+      "N": "Solo Violin",
+      "O": "Flute",
+      "P": "Clarinet",
+      "Q": "Oboe",
+      "R": "Trumpet",
+      "S": "Ambient Synth Pad",
+      "T": "Synth Lead"
+    }
+  },
+  "sequence": "A1A1q A2A5q A3A8q B1B1q B2B5q B3B8q C1C1q C2C5q C3C8q D1D1q D2D5q D3D8q E1E1q E2E5q E3E8q F1F1q F2F5q F3F8q G1G1q G2G5q G3G8q H1H1q H2H5q H3H8q I1I1q I2I5q I3I8q J1J1q J2J5q J3J8q K1K1q K2K5q K3K8q L1L1q L2L5q L3L8q M1M1q M2M5q M3M8q N1N1q N2N5q N3N8q O1O1q O2O5q O3O8q P1P1q P2P5q P3P8q Q1Q1q Q2Q5q Q3Q8q R1R1q R2R5q R3R8q S1S1q S2S5q S3S8q T1T1q T2T5q T3T8q"
+}

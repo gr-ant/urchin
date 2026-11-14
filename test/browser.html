@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Urchin browser checks</title>
+<button id="run">Run browser audio checks</button>
+<pre id="result">Ready</pre>
+<script type="module">
+  import { compile, play, render, instruments } from '../src/urchin.js';
+  const song = {
+    format: 'CSLT-1', version: '1.1',
+    metadata: { tempo_bpm: 300, time_signature: '1/4', instruments: { P: 'piano' } },
+    sequence: 'A1P1@2s A1P1@5s'
+  };
+  const result = document.querySelector('#result');
+  const check = (condition, message) => { if (!condition) throw new Error(message); };
+  async function run() {
+    document.querySelector('#run').disabled = true;
+    const context = new AudioContext();
+    try {
+      const audio = render(song);
+      check(JSON.stringify(compile(song).events.map(event => event.midi)) === '[36,72]', 'Octaves were not preserved');
+      check(audio.samples.some(value => Math.abs(value) > 0.01), 'PCM is silent');
+      check(Object.keys(instruments).length === 20, 'Instrument library is incomplete');
+      for (const id of Object.keys(instruments)) {
+        const preset = { ...song, metadata: { ...song.metadata, instruments: { P: id } } };
+        check(render(preset).samples.some(value => Math.abs(value) > 0.01), `${id} is silent`);
+      }
+      const player = await play(song, { context });
+      check(player.duration > 0, 'Missing playback duration');
+      player.stop();
+      player.stop();
+      await player.ended;
+      check(context.state === 'running', 'Caller context was closed');
+      const natural = await play(song, { context });
+      await natural.ended;
+      check(context.state === 'running', 'Natural completion closed caller context');
+      const empty = await play({ ...song, sequence: '' }, { context });
+      await empty.ended;
+      check(empty.duration === 0, 'Empty playback is not empty');
+      let rejected = false;
+      try { await play('invalid JSON', { context }); } catch { rejected = true; }
+      check(rejected && context.state === 'running', 'Invalid input handling failed');
+      const owned = await play(song);
+      owned.stop();
+      await owned.ended;
+      result.textContent = 'PASS: 20 instruments, PCM, playback, repeat stop, natural completion, empty input, error handling, caller-owned context, internal context';
+      document.documentElement.dataset.result = 'pass';
+    } catch (error) {
+      result.textContent = 'FAIL: ' + error.stack;
+      document.documentElement.dataset.result = 'fail';
+    } finally {
+      await context.close();
+      document.querySelector('#run').disabled = false;
+    }
+  }
+  document.querySelector('#run').onclick = run;
+  if (location.search === '?auto') run();
+</script>

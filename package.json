@@ -1,0 +1,27 @@
+{
+  "name": "urchin-synth",
+  "version": "1.1.0",
+  "description": "A tiny, dependency-free CSLT-1 JSON synthesizer for browsers and Node.js.",
+  "type": "module",
+  "exports": "./src/urchin.js",
+  "bin": {
+    "urchin": "./bin/urchin.js"
+  },
+  "files": [
+    "src",
+    "bin",
+    "examples",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/urchin.js examples/ambient.json ambient.wav",
+    "size": "node scripts/size.js",
+    "test:browser": "node scripts/browser-check.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "repository": "github:gr-ant/urchin"
+}
